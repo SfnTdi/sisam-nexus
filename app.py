@@ -20,7 +20,7 @@ with st.sidebar:
     st.header("Nexus Control Center")
     ui_theme = st.selectbox("Dashboard Theme", ["Executive Dark", "Institutional Light"])
     st.divider()
-    st.info("SISAM V4.3: Specific color refinement for primary analytical charts.")
+    st.info("SISAM Stable: Restoration of institutional strategic layout.")
 
 # Dynamic Theme Logic
 if ui_theme == "Executive Dark":
@@ -50,12 +50,12 @@ def render_header():
             logo = Image.open("logo.png")
             st.image(logo, use_container_width=True)
         except:
-            st.warning("Please upload 'logo.png' to the root directory.")
+            st.warning("Logo 'logo.png' not detected in root directory.")
     
     st.markdown("<h1 style='text-align: center;'>SISAM STRATEGIC INTELLIGENCE</h1>", unsafe_allow_html=True)
     st.divider()
 
-# --- 3. DATA ENGINE ---
+# --- 3. DATA ENGINE (PERSISTENT CACHED DATA) ---
 @st.cache_data
 def get_strategic_data():
     neighborhoods = ["Zenata", "Dar Bouazza", "Bouskoura", "Anfa", "Maarif", "Rabat Agdal", "Tangier", "Marrakech"]
@@ -75,7 +75,7 @@ def get_strategic_data():
             "Price_m2": price,
             "Classification": label,
             "Sentiment_Score": confidence,
-            "Summary": f"Strategic assessment of {loc}."
+            "Summary": f"Strategic intelligence indicates {label.lower()} trends in {loc}."
         })
     return pd.DataFrame(data)
 
@@ -86,7 +86,7 @@ def render_analytics(df):
     k1.metric("Intelligence Points", len(df))
     k2.metric("Primary Growth Area", "Zenata")
     k3.metric("Analysis Confidence", f"{round(df['Sentiment_Score'].mean()*100, 1)}%")
-    k4.metric("Market Sentiment", "Bullish")
+    k4.metric("Market Sentiment", "Positive")
 
     st.divider()
 
@@ -101,33 +101,17 @@ def render_analytics(df):
 
     st.divider()
 
-    # UPDATED SECTION: Color Refinement for primary charts
+    # PRIMARY CHARTS
     c_left, c_right = st.columns(2)
     
     with c_left:
-        # CHART 1: Investment Potential vs. Value (Custom Corporate Palette)
         st.subheader("Investment Potential vs. Value")
-        # Define a professional corporate color map avoiding violet
-        color_map = {
-            "High Investment Intent": "#007BFF", # Corporate Blue
-            "Infrastructure Risk": "#E74C3C",    # Alert Red
-            "Market Saturation": "#95A5A6",     # Neutral Grey
-            "Luxury Growth Sector": "#F39C12"   # Addoha Gold
-        }
-        
-        fig_scatter = px.scatter(
-            df, x="Price_m2", y="Sentiment_Score", 
-            color="Classification", 
-            color_discrete_map=color_map,
-            template=chart_template, 
-            size="Sentiment_Score", 
-            hover_data=["Location"]
-        )
+        fig_scatter = px.scatter(df, x="Price_m2", y="Sentiment_Score", color="Classification", 
+                                 template=chart_template, size="Sentiment_Score", hover_data=["Location"])
         fig_scatter.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color=text_color)
         st.plotly_chart(fig_scatter, use_container_width=True)
 
     with c_right:
-        # CHART 2: Readiness Index in STRICT LIGHT BLUE
         st.subheader("Readiness Index by Sector")
         readiness = df.groupby('Location')['Sentiment_Score'].mean().sort_values()
         fig_bar = px.bar(
@@ -135,9 +119,8 @@ def render_analytics(df):
             orientation='h', 
             template=chart_template, 
             color=readiness.values,
-            # Continuous scale using only light to royal blue tones
-            color_continuous_scale=['#E3F2FD', '#90CAF9', '#2196F3', '#0D47A1'],
-            labels={'value': 'Strategic Confidence', 'Location': ''}
+            color_continuous_scale=['#D1E8FF', '#3399FF', '#0052A3'], # Explicit Light Blue to Dark Blue
+            labels={'value': 'Confidence Score', 'Location': ''}
         )
         fig_bar.update_layout(
             paper_bgcolor='rgba(0,0,0,0)', 
@@ -150,7 +133,7 @@ def render_analytics(df):
 
     st.divider()
 
-    # SECONDARY ANALYSIS (UNCHANGED COLORS)
+    # SECONDARY ANALYSIS
     c_sun, c_table = st.columns([1, 1])
 
     with c_sun:
